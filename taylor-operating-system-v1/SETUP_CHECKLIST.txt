@@ -1,0 +1,13 @@
+TAYLOR OPERATING SYSTEM — SETUP CHECKLIST
+
+[ ] Run supabase/setup.sql in Supabase SQL Editor
+[ ] Confirm the final SQL result lists the public tables
+[ ] Refresh Supabase Table Editor
+[ ] Enable Email provider and user signups
+[ ] Deploy this folder to Vercel
+[ ] Add the Vercel URL to Supabase Authentication URL Configuration
+[ ] Open the Vercel site and select “Check database setup”
+[ ] Create Billy’s account first (administrator)
+[ ] Confirm the email if email confirmation is enabled
+[ ] Create the remaining team accounts
+[ ] Disable public signups after the team is enrolled

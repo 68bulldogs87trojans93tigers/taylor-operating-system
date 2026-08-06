@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0f172a" />
+  <title>Taylor Operating System</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <div id="toast" class="toast" hidden></div>
+
+  <section id="auth-screen" class="auth-shell">
+    <div class="auth-card">
+      <div class="brand-block">
+        <div class="logo">TOS</div>
+        <div>
+          <h1>Taylor Operating System</h1>
+          <p>Shared business operations and AI COO dashboard</p>
+        </div>
+      </div>
+
+      <div id="setup-alert" class="setup-alert" hidden>
+        <strong>Database setup is incomplete.</strong>
+        <span id="setup-message"></span>
+      </div>
+
+      <div class="tabs">
+        <button id="signin-tab" class="tab active" type="button">Sign In</button>
+        <button id="signup-tab" class="tab" type="button">Create Account</button>
+      </div>
+
+      <form id="signin-form" class="auth-form">
+        <label>Email<input id="signin-email" type="email" required autocomplete="email" /></label>
+        <label>Password<input id="signin-password" type="password" required minlength="6" autocomplete="current-password" /></label>
+        <button class="primary" type="submit">Sign In</button>
+      </form>
+
+      <form id="signup-form" class="auth-form" hidden>
+        <label>Full name<input id="signup-name" type="text" required autocomplete="name" /></label>
+        <label>Email<input id="signup-email" type="email" required autocomplete="email" /></label>
+        <label>Password<input id="signup-password" type="password" required minlength="8" autocomplete="new-password" /></label>
+        <button class="primary" type="submit">Create Account</button>
+        <p class="fine-print">The first confirmed account becomes the administrator. Later users join as members.</p>
+      </form>
+
+      <button id="health-check" class="text-button" type="button">Check database setup</button>
+      <p id="auth-status" class="auth-status"></p>
+    </div>
+  </section>
+
+  <div id="app-shell" class="app-shell" hidden>
+    <aside class="sidebar">
+      <div class="brand-mini"><div class="logo small">TOS</div><span>Taylor OS</span></div>
+      <nav id="nav">
+        <button data-view="dashboard" class="nav-item active">Dashboard</button>
+        <button data-view="tasks" class="nav-item">Master Tasks</button>
+        <button data-view="mortgage" class="nav-item">Firefly Mortgage</button>
+        <button data-view="medical" class="nav-item">Medical</button>
+        <button data-view="franchise" class="nav-item">NP Franchise</button>
+        <button data-view="construction" class="nav-item">Construction</button>
+        <button data-view="boba" class="nav-item">Boba Tea</button>
+        <button data-view="lakehouse" class="nav-item">Lake House</button>
+        <button data-view="meetings" class="nav-item">Meeting Intelligence</button>
+        <button data-view="coo" class="nav-item">AI COO</button>
+        <button data-view="team" class="nav-item">Team</button>
+      </nav>
+      <div class="sidebar-footer">
+        <span id="user-name"></span>
+        <button id="signout-btn" class="text-button">Sign Out</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div><p class="eyebrow">Taylor Operating System</p><h1 id="page-title">Executive Dashboard</h1></div>
+        <div class="top-actions">
+          <button id="add-task-btn" class="secondary">+ Task</button>
+          <button id="export-btn" class="secondary">Export</button>
+        </div>
+      </header>
+      <section id="view-container"></section>
+    </main>
+  </div>
+
+  <dialog id="task-dialog">
+    <form id="task-form" method="dialog" class="dialog-form">
+      <div class="dialog-head"><h2 id="task-dialog-title">Add Task</h2><button type="button" class="icon-button close-task">×</button></div>
+      <input id="task-id" type="hidden" />
+      <label>Task<input id="task-title" required /></label>
+      <div class="two-col"><label>Business<select id="task-business"></select></label><label>Owner<input id="task-owner" required /></label></div>
+      <div class="three-col"><label>Due date<input id="task-due" type="date" /></label><label>Priority<select id="task-priority"><option>Critical</option><option>High</option><option>Medium</option><option>Low</option></select></label><label>Status<select id="task-status"><option>Not Started</option><option>In Progress</option><option>Blocked</option><option>Complete</option></select></label></div>
+      <label>Why<textarea id="task-why" rows="2"></textarea></label>
+      <label>Notes<textarea id="task-notes" rows="3"></textarea></label>
+      <div class="dialog-actions"><button type="button" class="secondary close-task">Cancel</button><button class="primary" type="submit">Save Task</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="loan-dialog">
+    <form id="loan-form" method="dialog" class="dialog-form">
+      <div class="dialog-head"><h2>Loan</h2><button type="button" class="icon-button close-loan">×</button></div>
+      <input id="loan-id" type="hidden" />
+      <div class="two-col"><label>Borrower<input id="loan-borrower" required /></label><label>Amount<input id="loan-amount" type="number" min="0" required /></label></div>
+      <div class="two-col"><label>Product<input id="loan-product" /></label><label>Owner<input id="loan-owner" /></label></div>
+      <div class="two-col"><label>Stage<input id="loan-stage" /></label><label>Expected close<input id="loan-close" type="date" /></label></div>
+      <label>Next step<textarea id="loan-next" rows="3"></textarea></label>
+      <div class="dialog-actions"><button type="button" class="secondary close-loan">Cancel</button><button class="primary" type="submit">Save Loan</button></div>
+    </form>
+  </dialog>
+</body>
+</html>
