@@ -98,8 +98,8 @@ function TasksContent() {
 
   return <AppShell title="Master Task Board" subtitle="One shared source of truth for assignments and deadlines">
     <DataError message={error}/>
-    <div className="toolbar"><div className="filters"><input placeholder="Search tasks…" value={search} onChange={event => setSearch(event.target.value)}/><select value={filter} onChange={event => setFilter(event.target.value)}>{areas.map(area => <option key={area}>{area}</option>)}</select></div><button onClick={() => setShow(!show)}>+ New task</button></div>
-    {show && <form className="panel formGrid" onSubmit={add}>
+    <div className="toolbar"><div className="filters"><input placeholder="Search tasks…" value={search} onChange={event => setSearch(event.target.value)}/><select value={filter} onChange={event => setFilter(event.target.value)}>{areas.map(area => <option key={area}>{area}</option>)}</select></div>{context?.canEdit ? <button onClick={() => setShow(!show)}>+ New task</button> : <span className="readOnlyPill">Read-only access</span>}</div>
+    {show && context?.canEdit && <form className="panel formGrid" onSubmit={add}>
       <label>Task<input required value={form.title} onChange={event => setForm({ ...form, title: event.target.value })}/></label>
       <label>Business<select value={form.business} onChange={event => setForm({ ...form, business: event.target.value })}>{BUSINESSES.map(business => <option key={business}>{business}</option>)}</select></label>
       <label>Owner<input required value={form.owner} onChange={event => setForm({ ...form, owner: event.target.value })}/></label>
@@ -110,8 +110,8 @@ function TasksContent() {
     </form>}
     <section className="panel"><div className="tableWrap"><table><thead><tr>{sortableColumns.map(([key, label]) => <th key={key} aria-sort={sort.key === key ? (sort.direction === 'asc' ? 'ascending' : 'descending') : 'none'}><button type="button" className="sortButton" onClick={() => changeSort(key)}>{label}<span aria-hidden="true">{sort.key === key ? (sort.direction === 'asc' ? '▲' : '▼') : '↕'}</span></button></th>)}<th></th></tr></thead><tbody>{visible.map(task => <tr key={task.id}>
       <td><strong>{task.title}</strong>{task.why && <small>{task.why}</small>}</td><td>{task.business}</td><td>{task.owner}</td><td>{task.due_date || 'TBD'}</td><td><StatusBadge status={task.priority}/></td>
-      <td><select value={task.status} onChange={event => update(task.id, { status: event.target.value })}><option>Not Started</option><option>In Progress</option><option>Blocked</option><option>Complete</option></select></td>
-      <td><button className="icon dangerText" onClick={() => remove(task.id)}>Delete</button></td>
+      <td>{context?.canEdit ? <select value={task.status} onChange={event => update(task.id, { status: event.target.value })}><option>Not Started</option><option>In Progress</option><option>Blocked</option><option>Complete</option></select> : <StatusBadge status={task.status}/>}</td>
+      <td>{context?.canEdit && <button className="icon dangerText" onClick={() => remove(task.id)}>Delete</button>}</td>
     </tr>)}</tbody></table></div></section>
   </AppShell>;
 }

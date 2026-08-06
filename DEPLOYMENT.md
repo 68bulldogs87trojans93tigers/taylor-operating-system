@@ -1,25 +1,61 @@
-# Firefly OS v0.3.0 Deployment
+# Firefly OS v0.3.1 Deployment
 
-## 1. Configure Vercel
+Complete these steps in order.
 
-In the existing Vercel project, open **Settings → Environment Variables** and add:
+## 1. Run the Supabase migration
 
-- `OPENAI_API_KEY`: the server-side OpenAI API key
-- `OPENAI_MODEL`: `gpt-5-mini` (optional; this is the built-in default)
+1. Open `supabase/v0.3.1-developer-access.sql` from this release.
+2. Copy the **entire SQL contents** into the Supabase SQL Editor. Do not paste
+   only the filename.
+3. Click **Run** once.
+4. Review the result table and confirm Billy's login email shows role `admin`.
 
-Keep the existing Supabase variables unchanged. Apply the OpenAI key to Production,
-Preview, and Development if the AI COO should work in all three environments.
+If Billy is not already an admin, replace the example email below with Billy's
+actual Firefly OS login email and run it separately:
 
-## 2. Deploy the code
+```sql
+update public.workspace_members
+set role = 'admin'
+where user_id = (
+  select id from public.profiles
+  where lower(email) = lower('BILLY_LOGIN_EMAIL_HERE')
+  limit 1
+);
+```
+
+The migration adds access-control tables and policies. It does not delete or
+rewrite existing tasks, loans, meetings, profiles, or workspaces.
+
+## 2. Configure Supabase invitation redirects
+
+In **Supabase → Authentication → URL Configuration**, add this redirect URL:
+
+`https://YOUR-FIREFLY-DOMAIN/welcome`
+
+Replace the example domain with the current Vercel production domain.
+
+## 3. Configure Vercel
+
+In **Vercel → Project → Settings → Environment Variables**, add:
+
+- `SUPABASE_SERVICE_ROLE_KEY`: copy the service-role key from the existing
+  Supabase project's API settings.
+
+Apply it to Production and any Preview environments that should send invites.
+Never put this key in GitHub or any `NEXT_PUBLIC_` variable.
+
+Keep the existing Supabase and OpenAI variables unchanged.
+
+## 4. Deploy the code
 
 Upload the contents of this release folder to the root of the existing GitHub
-repository and commit the change. Vercel will build and deploy automatically.
+repository and commit the changes. Vercel will build and deploy automatically.
 
-## 3. Verify
+## 5. Verify
 
-1. Confirm the Vercel build completes successfully.
-2. Sign in and open **Tasks**. Click every column heading to verify ascending and descending sorting.
-3. Open **AI COO** and choose **What is overdue and who owns it?**
-4. Confirm the response reflects the current Supabase task data.
-
-No Supabase SQL or schema migration is required for this release.
+1. Sign in as Billy and confirm **Developer** appears in the sidebar.
+2. Open Developer and invite a test email with **Read Only** permission.
+3. Accept the emailed invitation and create the test password.
+4. Confirm the test user can navigate but cannot edit.
+5. Change the test user to **Editor** and verify editing becomes available.
+6. Revoke the test user and confirm access is removed.

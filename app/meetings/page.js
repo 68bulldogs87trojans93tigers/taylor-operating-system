@@ -11,11 +11,14 @@ export default function Meetings() {
   const [title, setTitle] = useState('');
   const [transcript, setTranscript] = useState('');
   const [error, setError] = useState('');
+  const [context, setContext] = useState(null);
   useEffect(() => { load(); }, []);
 
   async function load() {
     const supabase = getSupabase();
-    const { workspaceId } = await getWorkspaceContext(supabase);
+    const workspace = await getWorkspaceContext(supabase);
+    const { workspaceId } = workspace;
+    setContext(workspace);
     const { data, error: loadError } = await supabase.from('meetings').select('*').eq('workspace_id', workspaceId).order('created_at', { ascending: false });
     if (loadError) setError(loadError.message); else setMeetings(data || []);
   }
@@ -56,5 +59,5 @@ export default function Meetings() {
     setTitle(''); setTranscript(''); load();
   }
 
-  return <AppShell title="Meeting Intelligence" subtitle="Capture minutes and convert action lines into shared tasks"><DataError message={error}/><section className="twoCol"><form className="panel" onSubmit={save}><h2>New meeting</h2><label>Meeting title<input required value={title} onChange={event => setTitle(event.target.value)}/></label><label>Notes / transcript<textarea className="largeText" required value={transcript} onChange={event => setTranscript(event.target.value)} placeholder={'Paste notes here.\n\nUse action lines like:\n- Close Baylee loan | Jimmy | Firefly Mortgage\n- Schedule Albertville visit | Billy / Jamie | Medical'}/></label><button>Save meeting and create tasks</button><p className="hint">Lines beginning with “-” or “*” become tasks. Format: Task | Owner | Business.</p></form><div className="panel"><h2>Recent meetings</h2><div className="meetingList">{meetings.map(meeting => <article key={meeting.id}><strong>{meeting.title}</strong><small>{new Date(meeting.created_at).toLocaleString()}</small><p>{meeting.summary}</p></article>)}</div></div></section></AppShell>;
+  return <AppShell title="Meeting Intelligence" subtitle="Capture minutes and convert action lines into shared tasks"><DataError message={error}/>{!context?.canEdit && <div className="toolbar"><span className="readOnlyPill">Read-only access</span></div>}<section className={context?.canEdit ? 'twoCol' : ''}>{context?.canEdit && <form className="panel" onSubmit={save}><h2>New meeting</h2><label>Meeting title<input required value={title} onChange={event => setTitle(event.target.value)}/></label><label>Notes / transcript<textarea className="largeText" required value={transcript} onChange={event => setTranscript(event.target.value)} placeholder={'Paste notes here.\n\nUse action lines like:\n- Close Baylee loan | Jimmy | Firefly Mortgage\n- Schedule Albertville visit | Billy / Jamie | Medical'}/></label><button>Save meeting and create tasks</button><p className="hint">Lines beginning with “-” or “*” become tasks. Format: Task | Owner | Business.</p></form>}<div className="panel"><h2>Recent meetings</h2><div className="meetingList">{meetings.map(meeting => <article key={meeting.id}><strong>{meeting.title}</strong><small>{new Date(meeting.created_at).toLocaleString()}</small><p>{meeting.summary}</p></article>)}</div></div></section></AppShell>;
 }

@@ -1,12 +1,12 @@
 # Changelog
 
-## v0.3.0 — AI COO and Sortable Tasks
+## v0.3.1 — Developer Invitations and Permissions
 
-- Added ascending and descending sorting to every task qualifier column.
-- Added a workspace-aware AI COO chat with executive quick prompts.
-- Added live read-only context from tasks, loans, recent meeting summaries, and team roles.
-- Added browser-local chat history and a clear-chat control.
-- Preserved the existing live Supabase schema and Row Level Security model.
-- Excluded borrower names, team emails, and meeting transcripts from AI requests.
-- Added Vercel configuration and verification instructions.
-- Requires no database migration.
+- Added the developer-only access management screen.
+- Added secure email invitations and invited-user password setup.
+- Added Read Only, Editor, and Developer permission levels.
+- Added all-business and selected-business access.
+- Enforced editing and business access through Supabase Row Level Security.
+- Added permission editing and member revocation.
+- Removed public self-registration from the Firefly OS login screen.
+- Preserved the v0.3.0 AI COO and sortable task board.

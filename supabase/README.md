@@ -1,15 +1,10 @@
-# Supabase
+# Supabase — v0.3.1
 
-No SQL changes are required for v0.2.2.
+Run `v0.3.1-developer-access.sql` once before deploying the application.
 
-This release was corrected to use the live Supabase schema:
+The migration adds invitation tracking, optional business-level access, and
+restrictive security policies. It does not delete or rewrite existing tasks,
+loans, meetings, profiles, workspaces, or membership records.
 
-- `tasks.workspace_id`
-- `tasks.business`
-- `loans.borrower`
-- `meetings.transcript`
-- `workspace_members`
-- `workspace_member_directory`
-
-Do not run the earlier v0.3 or v0.3.1 migration files. The existing database
-records and workspace relationships are already correct.
+The final query lists the current membership roles. Confirm that Billy's row
+shows `admin`; that is the database role displayed as **Developer** in Firefly OS.

@@ -1,30 +1,28 @@
-# Firefly OS v0.3.0 — AI COO
+# Firefly OS v0.3.1 — Developer Access
 
-This release adds an AI operating layer to the production-schema-corrected
-Firefly OS application while preserving the existing Supabase schema.
+This release adds secure team invitations and role-based permissions to the
+verified v0.3.0 AI COO release.
 
-## New in v0.3.0
+## Permission levels
 
-- Sort the master task board by Task, Business, Owner, Due, Priority, or Status.
-- Reverse any sort by clicking the same column heading again.
-- Use the new AI COO chat from the main navigation.
-- Ask one-click questions about priorities, overdue work, risks, team ownership,
-  meetings, and the mortgage pipeline.
-- Keep recent chat messages on the signed-in user's current browser.
-- Enforce read-only AI access in this release.
+- **Read Only** (`viewer`): can navigate and read assigned business areas but
+  cannot create, edit, or delete operational records.
+- **Editor** (`member`): can navigate and edit operational records in assigned
+  business areas.
+- **Developer** (`admin`): full access plus invitations, permission changes,
+  business assignments, and access revocation.
 
-## Security and privacy
+## Included
 
-- The browser sends the signed-in Supabase access token to the Firefly OS server.
-- Supabase Row Level Security continues to control which workspace the user can read.
-- The OpenAI API key exists only on the server and is never sent to the browser.
-- Borrower names, team email addresses, and full meeting transcripts are excluded
-  from the AI context.
-- OpenAI response storage is disabled for requests made by this release.
-- Treat v0.3.0 as an operational assistant, not a PHI or regulated borrower-data
-  workflow, until the required vendor agreements and compliance configuration
-  have been reviewed and approved.
+- Developer-only sidebar link and protected `/developer` route.
+- Secure Supabase email invitations and `/welcome` account setup.
+- All-business or selected-business access controls.
+- Team member permission editing and access revocation.
+- Database-enforced read-only, editor, developer, and business-scope policies.
+- Invite-only account creation in the Firefly OS interface.
+- Existing sortable tasks and read-only AI COO functionality.
 
-## Deployment
+## Required deployment work
 
-See `DEPLOYMENT.md`. No Supabase SQL or migration is required.
+This release requires one controlled Supabase migration and the server-only
+`SUPABASE_SERVICE_ROLE_KEY` Vercel variable. Follow `DEPLOYMENT.md` exactly.
