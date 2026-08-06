@@ -1,24 +1,14 @@
-# Taylor Operating System – Project Management MVP
+# Taylor Operating System v0.2
 
-A real shared project-management system replacing the Word task list.
+Project-management MVP organized around one shared task database.
 
-## Included
-- Executive dashboard
-- Master task board with create, filter, update and delete
-- Business workspaces
-- Firefly Mortgage loan pipeline and Kanban view
-- Team accountability by person
-- Meeting notes that create tasks from action lines
-- Shared Supabase data and login
+## v0.2 changes
+- Removed Mortgage as a separate sidebar item.
+- Added Firefly Mortgage under the expandable Businesses menu.
+- Added direct business workspace links in the sidebar.
+- Added business detail workspaces with filtered tasks.
+- Embedded the live mortgage loan pipeline inside the Firefly Mortgage business workspace.
+- Kept Tasks as the central working page and enabled business-filtered task links.
 
-## Upgrade the existing deployment
-1. Upload the **contents of this folder** to the root of the existing GitHub repository.
-2. In Vercel use the project that already works.
-3. Framework Preset: Next.js. Root Directory: blank. Build/Output/Install: defaults.
-4. Keep the two existing environment variables.
-5. Run `supabase/setup.sql` in Supabase SQL Editor. It is safe to run over the earlier schema.
-6. Commit the GitHub upload. Vercel should deploy automatically; otherwise redeploy.
-
-## Meeting action syntax
-In Meeting Notes, lines beginning with `-` or `*` become tasks:
-`- Close Baylee loan | Jimmy | Mortgage`
+## Deploy
+Upload the contents of this folder to the root of the existing GitHub repository. Vercel will redeploy automatically. No new Supabase SQL is required for this version.

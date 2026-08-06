@@ -4,9 +4,22 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { getSupabase } from '../lib/supabase';
 
-const links = [
-  ['/dashboard','Dashboard'], ['/tasks','Tasks'], ['/mortgage','Mortgage'],
-  ['/businesses','Businesses'], ['/team','Team'], ['/meetings','Meetings']
+const mainLinks = [
+  ['/dashboard','Dashboard'],
+  ['/tasks','Tasks'],
+  ['/businesses','Businesses'],
+  ['/team','Team'],
+  ['/meetings','Meetings']
+];
+
+const businessLinks = [
+  ['Mortgage','Firefly Mortgage'],
+  ['Medical','Medical'],
+  ['NP Franchise','NP Franchise'],
+  ['Construction','Construction'],
+  ['Lake House','Lake House'],
+  ['Boba Tea','Boba Tea'],
+  ['Cross-Business / AI','Cross-Business / AI']
 ];
 
 export default function AppShell({ children, title, subtitle }) {
@@ -14,6 +27,7 @@ export default function AppShell({ children, title, subtitle }) {
   const router = useRouter();
   const [ready, setReady] = useState(false);
   const [email, setEmail] = useState('');
+  const [businessesOpen, setBusinessesOpen] = useState(true);
 
   useEffect(() => {
     const supabase = getSupabase();
@@ -36,7 +50,23 @@ export default function AppShell({ children, title, subtitle }) {
   return <div className="appShell">
     <aside className="sidebar">
       <div className="brand"><span className="logo">T</span><div><strong>Taylor OS</strong><small>Operating System</small></div></div>
-      <nav>{links.map(([href,label]) => <Link key={href} href={href} className={pathname===href?'active':''}>{label}</Link>)}</nav>
+      <nav>
+        {mainLinks.map(([href,label]) => {
+          const active = pathname === href;
+          if (href === '/businesses') {
+            return <div key={href} className="navGroup">
+              <div className="navGroupRow">
+                <Link href={href} className={active?'active':''}>{label}</Link>
+                <button type="button" className="navToggle" aria-label="Toggle businesses" onClick={()=>setBusinessesOpen(!businessesOpen)}>{businessesOpen?'▾':'▸'}</button>
+              </div>
+              {businessesOpen && <div className="subnav">
+                {businessLinks.map(([area,name]) => <Link key={area} href={`/businesses?area=${encodeURIComponent(area)}`}>{name}</Link>)}
+              </div>}
+            </div>;
+          }
+          return <Link key={href} href={href} className={active?'active':''}>{label}</Link>;
+        })}
+      </nav>
       <div className="sidebarFoot"><small>{email}</small><button className="ghost" onClick={signOut}>Sign out</button></div>
     </aside>
     <main className="main">
