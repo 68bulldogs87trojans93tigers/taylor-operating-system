@@ -1,11 +1,39 @@
 'use client';
+
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getSupabase } from '../../lib/supabase';
 
-export default function LoginPage(){
- const router=useRouter(); const [mode,setMode]=useState('signin'); const [email,setEmail]=useState(''); const [password,setPassword]=useState(''); const [message,setMessage]=useState(''); const [busy,setBusy]=useState(false);
- useEffect(()=>{getSupabase().auth.getSession().then(({data})=>{if(data.session) router.replace('/dashboard')})},[router]);
- async function submit(e){e.preventDefault();setBusy(true);setMessage('');const supabase=getSupabase();const result=mode==='signup'?await supabase.auth.signUp({email,password,options:{emailRedirectTo:window.location.origin+'/dashboard'}}):await supabase.auth.signInWithPassword({email,password});setBusy(false);if(result.error)setMessage(result.error.message);else if(mode==='signup')setMessage('Account created. Check your email if confirmation is required.');else router.replace('/dashboard');}
- return <div className="loginPage"><form className="loginCard" onSubmit={submit}><div className="brand large"><span className="logo">T</span><div><strong>Taylor Operating System</strong><small>Shared project management</small></div></div><h1>{mode==='signup'?'Create your account':'Welcome back'}</h1><label>Email<input type="email" required value={email} onChange={e=>setEmail(e.target.value)}/></label><label>Password<input type="password" minLength="6" required value={password} onChange={e=>setPassword(e.target.value)}/></label><button disabled={busy}>{busy?'Please wait…':mode==='signup'?'Create account':'Sign in'}</button><button type="button" className="secondary" onClick={()=>setMode(mode==='signup'?'signin':'signup')}>{mode==='signup'?'Already have an account? Sign in':'Create a new account'}</button>{message&&<div className="alert">{message}</div>}</form></div>
+export default function LoginPage() {
+  const router = useRouter();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [message, setMessage] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    getSupabase().auth.getSession().then(({ data }) => {
+      if (data.session) router.replace('/dashboard');
+    });
+  }, [router]);
+
+  async function submit(event) {
+    event.preventDefault();
+    setBusy(true);
+    setMessage('');
+    const { error } = await getSupabase().auth.signInWithPassword({ email, password });
+    setBusy(false);
+    if (error) setMessage(error.message);
+    else router.replace('/dashboard');
+  }
+
+  return <div className="loginPage"><form className="loginCard" onSubmit={submit}>
+    <div className="brand large"><span className="logo">F</span><div><strong>Firefly OS</strong><small>One operating system. Every business.</small></div></div>
+    <h1>Welcome back</h1>
+    <label>Email<input type="email" required value={email} onChange={event => setEmail(event.target.value)}/></label>
+    <label>Password<input type="password" minLength="8" required value={password} onChange={event => setPassword(event.target.value)}/></label>
+    <button disabled={busy}>{busy ? 'Please wait…' : 'Sign in'}</button>
+    <p className="hint loginHint">Firefly OS accounts are created by an Administrator. New teammates should use the secure link in their invitation email.</p>
+    {message && <div className="alert error">{message}</div>}
+  </form></div>;
 }

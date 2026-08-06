@@ -1,14 +1,24 @@
-# Taylor Operating System v0.2
+# Firefly OS v0.3.0
 
-Project-management MVP organized around one shared task database.
+AI-ready operating system for Firefly Mortgage, Medical, NP Franchise,
+Construction, Lake House and Boba Tea.
 
-## v0.2 changes
-- Removed Mortgage as a separate sidebar item.
-- Added Firefly Mortgage under the expandable Businesses menu.
-- Added direct business workspace links in the sidebar.
-- Added business detail workspaces with filtered tasks.
-- Embedded the live mortgage loan pipeline inside the Firefly Mortgage business workspace.
-- Kept Tasks as the central working page and enabled business-filtered task links.
+## v0.3 Team Launch
 
-## Deploy
-Upload the contents of this folder to the root of the existing GitHub repository. Vercel will redeploy automatically. No new Supabase SQL is required for this version.
+- Rebrands the application as Firefly OS.
+- Adds administrator-controlled team invitations.
+- Adds secure invitation acceptance and password creation.
+- Adds Administrator, Manager and Member roles.
+- Adds business-level access for tasks, loans and meetings.
+- Preserves the existing task, loan, meeting and people data.
+- Adds an administrator production-data verification check.
+- Shows invitation state, workload, overdue assignments and business access.
+
+## Required environment variables
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY` — server-only; never prefix with `NEXT_PUBLIC_`
+
+See `DEPLOYMENT.md` for the release procedure and `CHANGELOG.md` for the
+complete release notes.
