@@ -1,75 +1,25 @@
 # Firefly OS v0.3.0 Deployment
 
-Follow this order to avoid interrupting the existing v0.2.1 application.
+## 1. Configure Vercel
 
-## 1. Create a restore point
+In the existing Vercel project, open **Settings → Environment Variables** and add:
 
-In Supabase, open **Database → Backups** and confirm a current backup is
-available before applying the migration.
+- `OPENAI_API_KEY`: the server-side OpenAI API key
+- `OPENAI_MODEL`: `gpt-5-mini` (optional; this is the built-in default)
 
-## 2. Apply the database migration
+Keep the existing Supabase variables unchanged. Apply the OpenAI key to Production,
+Preview, and Development if the AI COO should work in all three environments.
 
-1. Open the Firefly OS project in Supabase.
-2. Open **SQL Editor**.
-3. Paste and run `supabase/v0.3-team-launch.sql`.
-4. Confirm the final result says the Team Launch migration completed.
+## 2. Deploy the code
 
-The migration treats the earliest existing Supabase Auth user as the original
-Billy/owner account when no Administrator is already configured. Before
-continuing, verify the Billy row in **Table Editor → people** has:
+Upload the contents of this release folder to the root of the existing GitHub
+repository and commit the change. Vercel will build and deploy automatically.
 
-- `app_role` = `admin`
-- `status` = `active`
-- `user_id` populated
+## 3. Verify
 
-## 3. Add the server-only Vercel variable
+1. Confirm the Vercel build completes successfully.
+2. Sign in and open **Tasks**. Click every column heading to verify ascending and descending sorting.
+3. Open **AI COO** and choose **What is overdue and who owns it?**
+4. Confirm the response reflects the current Supabase task data.
 
-In Vercel, open **Project → Settings → Environment Variables** and add:
-
-`SUPABASE_SERVICE_ROLE_KEY`
-
-Use the Supabase service-role/secret key. Apply it to Production, Preview and
-Development. Do not expose it in browser code and do not name it with a
-`NEXT_PUBLIC_` prefix.
-
-The existing public variables must remain configured:
-
-- `NEXT_PUBLIC_SUPABASE_URL`
-- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
-
-## 4. Configure invitation redirects
-
-In Supabase, open **Authentication → URL Configuration**:
-
-1. Set **Site URL** to the production Firefly OS address.
-2. Add the production address followed by `/welcome` to **Redirect URLs**.
-3. Add the Vercel preview pattern only if invitation testing is required in
-   preview deployments.
-
-In **Authentication → Providers → Email**, disable open user registration so
-accounts are issued only through the Firefly OS Administrator invitation flow.
-
-## 5. Deploy the application
-
-Replace the existing GitHub repository contents with this release while
-preserving the repository's own `.git` folder. Commit and push the changes.
-Vercel will build and deploy automatically.
-
-## 6. Verify production
-
-1. Sign in as Billy.
-2. Open **Team**.
-3. Select **Verify production data**.
-4. Confirm database, authentication, row-level security and invitation service
-   all show as ready.
-5. Invite one test teammate with access to only one business.
-6. Sign in as the test teammate and verify they see that business's tasks but
-   not restricted businesses.
-
-## Rollback
-
-If the application build fails, restore the previous Vercel deployment; do not
-rerun or remove the migration. The v0.2.1 application can continue using the
-extended tables. If access is unexpectedly restricted, use Supabase SQL Editor
-to verify Billy's `user_id`, `app_role`, `status`, `active` and
-`business_access` values before changing policies.
+No Supabase SQL or schema migration is required for this release.

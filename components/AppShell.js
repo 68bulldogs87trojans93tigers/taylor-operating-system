@@ -6,6 +6,7 @@ import { getSupabase } from '../lib/supabase';
 
 const mainLinks = [
   ['/dashboard','Dashboard'],
+  ['/coo','AI COO'],
   ['/tasks','Tasks'],
   ['/businesses','Businesses'],
   ['/team','Team'],

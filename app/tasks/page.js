@@ -10,6 +10,16 @@ import { BUSINESSES } from '../../lib/businesses';
 import { getWorkspaceContext } from '../../lib/workspace';
 
 const blank = { title: '', business: 'Firefly Mortgage', owner: 'Billy', due_date: '', priority: 'High', status: 'Not Started', why: '' };
+const priorityRank = { Critical: 0, High: 1, Medium: 2, Low: 3 };
+const statusRank = { Blocked: 0, 'In Progress': 1, 'Not Started': 2, Complete: 3 };
+const sortableColumns = [
+  ['title', 'Task'],
+  ['business', 'Business'],
+  ['owner', 'Owner'],
+  ['due_date', 'Due'],
+  ['priority', 'Priority'],
+  ['status', 'Status']
+];
 
 function TasksContent() {
   const searchParams = useSearchParams();
@@ -21,6 +31,7 @@ function TasksContent() {
   const [show, setShow] = useState(false);
   const [context, setContext] = useState(null);
   const [error, setError] = useState('');
+  const [sort, setSort] = useState({ key: 'due_date', direction: 'asc' });
 
   useEffect(() => { load(); }, []);
 
@@ -58,10 +69,32 @@ function TasksContent() {
   }
 
   const areas = ['All', ...new Set(tasks.map(task => task.business).filter(Boolean))];
-  const visible = useMemo(() => tasks.filter(task =>
-    (filter === 'All' || task.business === filter) &&
-    `${task.title} ${task.owner} ${task.why || ''}`.toLowerCase().includes(search.toLowerCase())
-  ), [tasks, filter, search]);
+  const visible = useMemo(() => {
+    const filtered = tasks.filter(task =>
+      (filter === 'All' || task.business === filter) &&
+      `${task.title} ${task.business} ${task.owner} ${task.priority} ${task.status} ${task.why || ''}`.toLowerCase().includes(search.toLowerCase())
+    );
+
+    return [...filtered].sort((left, right) => {
+      let a = left[sort.key];
+      let b = right[sort.key];
+      if (sort.key === 'priority') { a = priorityRank[a] ?? 99; b = priorityRank[b] ?? 99; }
+      if (sort.key === 'status') { a = statusRank[a] ?? 99; b = statusRank[b] ?? 99; }
+      if (a === b) return 0;
+      if (a === null || a === undefined || a === '') return 1;
+      if (b === null || b === undefined || b === '') return -1;
+      const comparison = typeof a === 'number'
+        ? a - b
+        : String(a).localeCompare(String(b), undefined, { numeric: true, sensitivity: 'base' });
+      return sort.direction === 'asc' ? comparison : -comparison;
+    });
+  }, [tasks, filter, search, sort]);
+
+  function changeSort(key) {
+    setSort(current => current.key === key
+      ? { key, direction: current.direction === 'asc' ? 'desc' : 'asc' }
+      : { key, direction: 'asc' });
+  }
 
   return <AppShell title="Master Task Board" subtitle="One shared source of truth for assignments and deadlines">
     <DataError message={error}/>
@@ -75,7 +108,7 @@ function TasksContent() {
       <label>Why<input value={form.why} onChange={event => setForm({ ...form, why: event.target.value })}/></label>
       <div className="wide actions"><button>Save task</button><button type="button" className="secondary" onClick={() => setShow(false)}>Cancel</button></div>
     </form>}
-    <section className="panel"><div className="tableWrap"><table><thead><tr><th>Task</th><th>Business</th><th>Owner</th><th>Due</th><th>Priority</th><th>Status</th><th></th></tr></thead><tbody>{visible.map(task => <tr key={task.id}>
+    <section className="panel"><div className="tableWrap"><table><thead><tr>{sortableColumns.map(([key, label]) => <th key={key} aria-sort={sort.key === key ? (sort.direction === 'asc' ? 'ascending' : 'descending') : 'none'}><button type="button" className="sortButton" onClick={() => changeSort(key)}>{label}<span aria-hidden="true">{sort.key === key ? (sort.direction === 'asc' ? '▲' : '▼') : '↕'}</span></button></th>)}<th></th></tr></thead><tbody>{visible.map(task => <tr key={task.id}>
       <td><strong>{task.title}</strong>{task.why && <small>{task.why}</small>}</td><td>{task.business}</td><td>{task.owner}</td><td>{task.due_date || 'TBD'}</td><td><StatusBadge status={task.priority}/></td>
       <td><select value={task.status} onChange={event => update(task.id, { status: event.target.value })}><option>Not Started</option><option>In Progress</option><option>Blocked</option><option>Complete</option></select></td>
       <td><button className="icon dangerText" onClick={() => remove(task.id)}>Delete</button></td>
