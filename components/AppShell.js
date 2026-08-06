@@ -13,7 +13,7 @@ const mainLinks = [
 ];
 
 const businessLinks = [
-  ['Mortgage','Firefly Mortgage'],
+  ['Firefly Mortgage','Firefly Mortgage'],
   ['Medical','Medical'],
   ['NP Franchise','NP Franchise'],
   ['Construction','Construction'],
@@ -33,10 +33,7 @@ export default function AppShell({ children, title, subtitle }) {
     const supabase = getSupabase();
     supabase.auth.getSession().then(({ data }) => {
       if (!data.session) router.replace('/login');
-      else {
-        setEmail(data.session.user.email || '');
-        supabase.rpc('activate_current_member').then(() => setReady(true));
-      }
+      else { setEmail(data.session.user.email || ''); setReady(true); }
     });
     const { data } = supabase.auth.onAuthStateChange((_event, session) => {
       if (!session) router.replace('/login');
@@ -52,7 +49,7 @@ export default function AppShell({ children, title, subtitle }) {
   if (!ready) return <div className="center"><div className="card">Loading workspace…</div></div>;
   return <div className="appShell">
     <aside className="sidebar">
-      <div className="brand"><span className="logo">F</span><div><strong>Firefly OS</strong><small>Entrepreneurial Operating System</small></div></div>
+      <div className="brand"><span className="logo">F</span><div><strong>Firefly OS</strong><small>Operating System</small></div></div>
       <nav>
         {mainLinks.map(([href,label]) => {
           const active = pathname === href;
