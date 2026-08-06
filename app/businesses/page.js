@@ -1,6 +1,6 @@
 'use client';
 import Link from 'next/link';
-import {useEffect,useMemo,useState} from 'react';
+import {Suspense,useEffect,useMemo,useState} from 'react';
 import {useSearchParams} from 'next/navigation';
 import AppShell from '../../components/AppShell';
 import StatusBadge from '../../components/StatusBadge';
@@ -12,7 +12,7 @@ const labels={'Mortgage':'Firefly Mortgage','Medical':'Medical','NP Franchise':'
 const descriptions={'Lake House':'Protect revenue, manage repairs and prepare manager transition.','Mortgage':'Close loans, prove operations and scale production.','Medical':'Consolidate facilities and evaluate Hazel Green clinic.','NP Franchise':'Launch, measure demand and build franchise support.','Boba Tea':'Improve P&L, traffic and operating accountability.','Construction':'Launch pipeline, first homes and subdivision analysis.','Cross-Business / AI':'Websites, dashboards, meeting intelligence and automation.'};
 const stages=['Lead','Application','Processing','Underwriting','Conditions','Clear to Close','Funded','On Hold'];
 
-export default function Businesses(){
+function BusinessesContent(){
   const searchParams=useSearchParams();
   const selected=searchParams.get('area');
   const [tasks,setTasks]=useState([]),[loans,setLoans]=useState([]),[error,setError]=useState('');
@@ -46,3 +46,5 @@ export default function Businesses(){
 
   return <AppShell title="Business Workspaces" subtitle="Select a business to see its tasks, pipeline and current priorities"><DataError message={error}/><section className="businessGrid">{grouped.map(g=><Link href={`/businesses?area=${encodeURIComponent(g.area)}`} className="businessCard businessLink" key={g.area}><div className="panelHead"><h2>{labels[g.area]}</h2><span className="count">{g.items.filter(t=>t.status!=='Complete').length} open</span></div><p>{descriptions[g.area]}</p><div className="taskList compact">{g.items.slice(0,5).map(t=><div className="taskRow" key={t.id}><div><strong>{t.title}</strong><small>{t.owner} · {t.due_date||'TBD'}</small></div><StatusBadge status={t.status}/></div>)}{!g.items.length&&<small>No tasks yet.</small>}</div><span className="openWorkspace">Open workspace →</span></Link>)}</section></AppShell>;
 }
+
+export default function Businesses(){return <Suspense fallback={<AppShell title="Business Workspaces" subtitle="Loading businesses…"><section className="panel">Loading…</section></AppShell>}><BusinessesContent/></Suspense>}
