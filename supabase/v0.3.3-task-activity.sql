@@ -1,5 +1,5 @@
--- Firefly OS v0.3.3 — Task Notes & Activity
--- Run this entire file once in the Supabase SQL Editor before deploying v0.3.3.
+-- Firefly OS v0.3.4 — Task Notes & Activity
+-- Run this entire file once before deploying v0.3.4.
 
 create table if not exists public.task_activity (
   id uuid primary key default gen_random_uuid(),
@@ -19,6 +19,9 @@ create index if not exists task_activity_task_created_idx
 
 create index if not exists task_activity_workspace_created_idx
   on public.task_activity (workspace_id, created_at desc);
+
+create index if not exists task_activity_created_by_idx
+  on public.task_activity (created_by);
 
 alter table public.task_activity enable row level security;
 
@@ -42,6 +45,7 @@ as $$
 $$;
 
 revoke all on function public.firefly_has_task_access(uuid, uuid) from public;
+revoke execute on function public.firefly_has_task_access(uuid, uuid) from anon;
 grant execute on function public.firefly_has_task_access(uuid, uuid) to authenticated;
 
 drop policy if exists "v033_task_activity_read" on public.task_activity;
@@ -54,7 +58,10 @@ create policy "v033_task_activity_add_note"
 on public.task_activity for insert to authenticated
 with check (
   activity_type = 'note'
-  and created_by = auth.uid()
+  and created_by = (select auth.uid())
+  and field_name is null
+  and old_value is null
+  and new_value is null
   and public.firefly_can_edit(workspace_id)
   and public.firefly_has_task_access(task_id, workspace_id)
 );
@@ -132,6 +139,9 @@ begin
   return new;
 end;
 $$;
+
+revoke all on function public.firefly_log_task_activity() from public;
+revoke execute on function public.firefly_log_task_activity() from anon, authenticated;
 
 drop trigger if exists firefly_task_activity_trigger on public.tasks;
 create trigger firefly_task_activity_trigger

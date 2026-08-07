@@ -1,37 +1,29 @@
-# Firefly OS v0.3.3 Deployment
+# Firefly OS v0.3.4 Deployment
 
 Complete these steps in order.
 
 ## 1. Run the Supabase migration
 
-1. Open `supabase/v0.3.3-task-activity.sql` from this release.
-2. In Supabase, open **SQL Editor → New query**.
-3. Copy and paste the **entire SQL contents**. Do not paste only the filename.
-4. Click **Run** once.
-5. Confirm the result shows a number under `tasks_with_activity`.
+1. Open Supabase **SQL Editor → New query**.
+2. Copy the entire contents of `supabase/v0.3.3-task-activity.sql` into the editor.
+3. Click **Run** once.
+4. Confirm the result shows a number under `tasks_with_activity`.
 
-The migration creates the task-activity table, access policies, automatic task
-history, and a starting activity entry for existing tasks. It does not delete or
-replace tasks, notes, companies, loans, meetings, profiles, or memberships.
-
-For the current v0.3.2 deployment, run only the v0.3.3 migration. New projects
-must run all migration files in version order.
+The migration is idempotent and safe to run again. It creates task activity,
+secure access policies, automatic history, and starting entries for existing
+tasks. It does not delete existing data.
 
 ## 2. Deploy the code
 
-Upload the contents of this release folder to the root of the existing GitHub
-repository and commit the changes. Vercel will build and deploy automatically.
+Upload this release's contents to the root of the existing GitHub repository and
+commit the changes. Vercel should deploy from the production branch.
 
-No new Vercel environment variables are required. Keep the existing Supabase,
-service-role, and OpenAI variables unchanged.
+No new environment variables are required.
 
 ## 3. Verify
 
-1. Sign in and open **Tasks**.
-2. Click **Open** beside a task.
-3. Add a test note and confirm your name and timestamp appear.
-4. Change the owner, due date, priority, or status and save the task.
-5. Confirm each changed field appears in the activity timeline.
-6. Confirm a Read Only user can open and read the history but cannot add notes
-   or edit the task.
-7. Confirm a company-scoped user only sees activity for assigned companies.
+1. Refresh Firefly OS and confirm the sidebar says **v0.3.4**.
+2. Open **Tasks** and confirm the **Notes & updates** column is visible.
+3. Click **Notes & updates**, add a test note, and confirm the author and time.
+4. Change a task field and confirm it appears in the activity timeline.
+5. Confirm Read Only users can view but cannot post or edit.
