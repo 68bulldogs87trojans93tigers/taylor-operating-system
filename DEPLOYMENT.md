@@ -1,21 +1,21 @@
-# Firefly OS v0.3.2 Deployment
+# Firefly OS v0.3.3 Deployment
 
 Complete these steps in order.
 
 ## 1. Run the Supabase migration
 
-1. Open `supabase/v0.3.2-company-manager.sql` from this release.
-2. In Supabase, open **SQL Editor** and clear any previous text.
+1. Open `supabase/v0.3.3-task-activity.sql` from this release.
+2. In Supabase, open **SQL Editor → New query**.
 3. Copy and paste the **entire SQL contents**. Do not paste only the filename.
 4. Click **Run** once.
-5. Confirm the result lists the current Firefly companies.
+5. Confirm the result shows a number under `tasks_with_activity`.
 
-This migration creates the company directory, seeds the existing companies,
-adds access policies, and installs safe company renaming. It does not delete
-tasks, loans, meetings, profiles, workspaces, memberships, or invitations.
+The migration creates the task-activity table, access policies, automatic task
+history, and a starting activity entry for existing tasks. It does not delete or
+replace tasks, notes, companies, loans, meetings, profiles, or memberships.
 
-If upgrading from v0.3.1, run only the v0.3.2 migration. New installations must
-run the earlier migrations in version order before v0.3.2.
+For the current v0.3.2 deployment, run only the v0.3.3 migration. New projects
+must run all migration files in version order.
 
 ## 2. Deploy the code
 
@@ -27,11 +27,11 @@ service-role, and OpenAI variables unchanged.
 
 ## 3. Verify
 
-1. Sign in with a Developer account and open **Developer**.
-2. Add a temporary company with a name and description.
-3. Confirm it appears in the sidebar, Business Workspaces, New Task form, and
-   company-access options for team members.
-4. Create a task for it and confirm the task appears in that company's workspace.
-5. Edit the company description, then archive and restore the company.
-6. Delete the temporary task if desired. Companies are archived rather than
-   deleted so historical task data remains intact.
+1. Sign in and open **Tasks**.
+2. Click **Open** beside a task.
+3. Add a test note and confirm your name and timestamp appear.
+4. Change the owner, due date, priority, or status and save the task.
+5. Confirm each changed field appears in the activity timeline.
+6. Confirm a Read Only user can open and read the history but cannot add notes
+   or edit the task.
+7. Confirm a company-scoped user only sees activity for assigned companies.

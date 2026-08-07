@@ -1,11 +1,11 @@
-# Supabase — Firefly OS v0.3.2
+# Supabase — Firefly OS v0.3.3
 
-For an existing v0.3.1 deployment, run `v0.3.2-company-manager.sql` once before
-deploying the application.
+For the current v0.3.2 deployment, run `v0.3.3-task-activity.sql` once before
+deploying the v0.3.3 application.
 
-The migration adds the workspace company directory, seeds the current company
-names, applies access policies, and installs safe company renaming. It does not
-delete existing operational or authentication data.
+The migration adds task notes, automatic change history, indexes, and role- and
+company-aware Row Level Security. Existing tasks receive a starting activity
+entry; no existing operational or authentication data is deleted.
 
-The final query should list the active Firefly companies. New installations
-must run the SQL migrations in version order.
+The final result should show a count under `tasks_with_activity`. New
+installations must run the SQL migrations in version order.

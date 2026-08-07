@@ -1,21 +1,24 @@
-# Firefly OS v0.3.2 — Company Manager
+# Firefly OS v0.3.3 — Task Notes & Activity
 
-This release lets Developers create and manage companies without changing the
-code or running additional SQL for each company.
+This release gives every accessible task a shared detail panel, team notes, and
+an automatic history of important changes.
 
 ## Included
 
-- Developer-only **Add company** form.
-- Company name and description editing.
-- Archive and restore controls for user-created companies.
-- Automatic company lists in the sidebar, Business Workspaces, New Task form,
-  and team invitation permissions.
-- Safe company renaming that updates existing task and member-access records.
-- Workspace and company-level access enforced by Supabase Row Level Security.
-- Preserved v0.3.1 Read Only, Editor, and Developer roles.
-- Preserved sortable tasks, AI COO, meeting capture, and mortgage pipeline.
+- One-click **Open** action on the Master Task Board.
+- Full task editing inside the detail panel.
+- Team notes with author and timestamp.
+- Automatic history for task name, business, owner, due date, priority, status,
+  and task-detail changes.
+- Latest task update shown directly on the Master Task Board.
+- Task links from Business Workspaces and Team Accountability.
+- Read Only users can view activity; Editors and Developers can add notes and
+  update tasks.
+- Company-scoped access is enforced for both tasks and their activity.
+- Recent task notes and changes are included in the AI COO operating snapshot.
+- Preserved v0.3.2 company management and all previous Firefly OS features.
 
 ## Required deployment work
 
-Run `supabase/v0.3.2-company-manager.sql` once, then deploy the application code.
-No new Vercel environment variables are required. See `DEPLOYMENT.md`.
+Run `supabase/v0.3.3-task-activity.sql` once, then deploy the application code.
+No new Vercel environment variables are required. Follow `DEPLOYMENT.md`.

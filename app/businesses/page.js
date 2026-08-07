@@ -63,7 +63,7 @@ function BusinessesContent() {
         <td>{context?.canEdit ? <input value={loan.next_step || ''} onBlur={event => updateLoan(loan.id, { next_step: event.target.value })} onChange={event => setLoans(current => current.map(item => item.id === loan.id ? { ...item, next_step: event.target.value } : item))}/> : loan.next_step || '—'}</td>
       </tr>)}</tbody></table></div></section>
     </>}
-    <section className="panel"><div className="panelHead"><h2>{selected === 'Firefly Mortgage' ? 'Business tasks' : 'Tasks'}</h2><span className="count">{selectedTasks.filter(task => task.status !== 'Complete').length} open</span></div><div className="taskList">{selectedTasks.map(task => <div className="taskRow" key={task.id}><div><strong>{task.title}</strong><small>{task.owner} · {task.due_date || 'TBD'}{task.why ? ` · ${task.why}` : ''}</small></div><StatusBadge status={task.status}/></div>)}{!selectedTasks.length && <small>No tasks yet.</small>}</div></section>
+    <section className="panel"><div className="panelHead"><h2>{selected === 'Firefly Mortgage' ? 'Business tasks' : 'Tasks'}</h2><span className="count">{selectedTasks.filter(task => task.status !== 'Complete').length} open</span></div><div className="taskList">{selectedTasks.map(task => <Link href={`/tasks?task=${task.id}`} className="taskRow taskRowLink" key={task.id}><div><strong>{task.title}</strong><small>{task.owner} · {task.due_date || 'TBD'}{task.why ? ` · ${task.why}` : ''}</small></div><StatusBadge status={task.status}/></Link>)}{!selectedTasks.length && <small>No tasks yet.</small>}</div></section>
   </AppShell>;
 
   return <AppShell title="Business Workspaces" subtitle="Select a business to see its tasks, pipeline and current priorities">

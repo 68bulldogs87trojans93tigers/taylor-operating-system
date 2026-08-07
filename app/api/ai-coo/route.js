@@ -61,15 +61,16 @@ export async function POST(request) {
   if (!membership?.workspace_id) return jsonError('You are not assigned to a Firefly OS workspace.', 403);
 
   const workspaceId = membership.workspace_id;
-  const [workspaceResult, tasksResult, loansResult, meetingsResult, teamResult] = await Promise.all([
+  const [workspaceResult, tasksResult, activityResult, loansResult, meetingsResult, teamResult] = await Promise.all([
     supabase.from('workspaces').select('name').eq('id', workspaceId).maybeSingle(),
-    supabase.from('tasks').select('title,business,owner,due_date,priority,status,why,updated_at').eq('workspace_id', workspaceId).limit(250),
+    supabase.from('tasks').select('id,title,business,owner,due_date,priority,status,why,updated_at').eq('workspace_id', workspaceId).limit(250),
+    supabase.from('task_activity').select('task_id,activity_type,message,created_at').eq('workspace_id', workspaceId).order('created_at', { ascending: false }).limit(100),
     supabase.from('loans').select('amount,product,owner,stage,expected_close,next_step,updated_at').eq('workspace_id', workspaceId).limit(100),
     supabase.from('meetings').select('title,summary,created_at').eq('workspace_id', workspaceId).order('created_at', { ascending: false }).limit(20),
     supabase.from('workspace_member_directory').select('full_name,role').eq('workspace_id', workspaceId).limit(100)
   ]);
 
-  const dataError = [workspaceResult, tasksResult, loansResult, meetingsResult, teamResult].find(result => result.error)?.error;
+  const dataError = [workspaceResult, tasksResult, activityResult, loansResult, meetingsResult, teamResult].find(result => result.error)?.error;
   if (dataError) return jsonError(`Could not load workspace data: ${dataError.message}`, 500);
 
   const today = new Date().toISOString().slice(0, 10);
@@ -85,6 +86,7 @@ export async function POST(request) {
       critical_tasks: tasks.filter(task => task.priority === 'Critical' && task.status !== 'Complete').length
     },
     tasks,
+    recent_task_activity: activityResult.data || [],
     loans: loansResult.data || [],
     recent_meetings: meetingsResult.data || [],
     team: teamResult.data || []

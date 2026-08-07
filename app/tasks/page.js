@@ -1,10 +1,11 @@
 'use client';
 
-import { Suspense, useEffect, useMemo, useState } from 'react';
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import AppShell from '../../components/AppShell';
 import StatusBadge from '../../components/StatusBadge';
 import DataError from '../../components/DataError';
+import TaskDetailPanel from '../../components/TaskDetailPanel';
 import { getSupabase } from '../../lib/supabase';
 import { getBusinesses } from '../../lib/businesses';
 import { getWorkspaceContext } from '../../lib/workspace';
@@ -33,6 +34,9 @@ function TasksContent() {
   const [error, setError] = useState('');
   const [sort, setSort] = useState({ key: 'due_date', direction: 'asc' });
   const [businesses, setBusinesses] = useState([]);
+  const [latestActivity, setLatestActivity] = useState({});
+  const [selectedTask, setSelectedTask] = useState(null);
+  const requestedTaskHandled = useRef(false);
 
   useEffect(() => { load(); }, []);
 
@@ -40,9 +44,10 @@ function TasksContent() {
     const supabase = getSupabase();
     const workspace = await getWorkspaceContext(supabase);
     setContext(workspace);
-    const [taskResult, businessData] = await Promise.all([
+    const [taskResult, businessData, activityResult] = await Promise.all([
       supabase.from('tasks').select('*').eq('workspace_id', workspace.workspaceId).order('due_date', { ascending: true, nullsFirst: false }),
-      getBusinesses(supabase, workspace.workspaceId)
+      getBusinesses(supabase, workspace.workspaceId),
+      supabase.from('task_activity').select('task_id,activity_type,message,created_at').eq('workspace_id', workspace.workspaceId).order('created_at', { ascending: false }).limit(1000)
     ]);
     const { data, error: loadError } = taskResult;
     const allowedBusinesses = businessData.filter(business => !workspace.businesses || workspace.businesses.includes(business.name));
@@ -50,8 +55,25 @@ function TasksContent() {
     setForm(current => allowedBusinesses.some(business => business.name === current.business)
       ? current
       : { ...current, business: allowedBusinesses[0]?.name || '' });
-    if (loadError) setError(loadError.message); else setTasks(data || []);
+    const newest = {};
+    (activityResult.data || []).forEach(item => { if (!newest[item.task_id]) newest[item.task_id] = item; });
+    setLatestActivity(newest);
+    if (loadError) setError(loadError.message); else {
+      setTasks(data || []);
+      setSelectedTask(current => current ? (data || []).find(task => task.id === current.id) || null : current);
+    }
   }
+
+  useEffect(() => {
+    const requestedTask = searchParams.get('task');
+    if (requestedTask && tasks.length && !selectedTask && !requestedTaskHandled.current) {
+      const match = tasks.find(task => task.id === requestedTask);
+      if (match) {
+        requestedTaskHandled.current = true;
+        setSelectedTask(match);
+      }
+    }
+  }, [tasks, searchParams, selectedTask]);
 
   async function add(event) {
     event.preventDefault();
@@ -70,6 +92,13 @@ function TasksContent() {
   async function update(id, patch) {
     const { error: updateError } = await getSupabase().from('tasks').update({ ...patch, updated_by: context?.userId || null }).eq('id', id);
     if (updateError) setError(updateError.message); else load();
+  }
+
+  async function refreshSelected(id) {
+    const supabase = getSupabase();
+    const { data } = await supabase.from('tasks').select('*').eq('id', id).maybeSingle();
+    if (data) setSelectedTask(data);
+    await load();
   }
 
   async function remove(id) {
@@ -119,10 +148,11 @@ function TasksContent() {
       <div className="wide actions"><button>Save task</button><button type="button" className="secondary" onClick={() => setShow(false)}>Cancel</button></div>
     </form>}
     <section className="panel"><div className="tableWrap"><table><thead><tr>{sortableColumns.map(([key, label]) => <th key={key} aria-sort={sort.key === key ? (sort.direction === 'asc' ? 'ascending' : 'descending') : 'none'}><button type="button" className="sortButton" onClick={() => changeSort(key)}>{label}<span aria-hidden="true">{sort.key === key ? (sort.direction === 'asc' ? '▲' : '▼') : '↕'}</span></button></th>)}<th></th></tr></thead><tbody>{visible.map(task => <tr key={task.id}>
-      <td><strong>{task.title}</strong>{task.why && <small>{task.why}</small>}</td><td>{task.business}</td><td>{task.owner}</td><td>{task.due_date || 'TBD'}</td><td><StatusBadge status={task.priority}/></td>
+      <td><strong>{task.title}</strong>{task.why && <small>{task.why}</small>}{latestActivity[task.id] && <small className="latestActivity">Latest: {latestActivity[task.id].message}</small>}</td><td>{task.business}</td><td>{task.owner}</td><td>{task.due_date || 'TBD'}</td><td><StatusBadge status={task.priority}/></td>
       <td>{context?.canEdit ? <select value={task.status} onChange={event => update(task.id, { status: event.target.value })}><option>Not Started</option><option>In Progress</option><option>Blocked</option><option>Complete</option></select> : <StatusBadge status={task.status}/>}</td>
-      <td>{context?.canEdit && <button className="icon dangerText" onClick={() => remove(task.id)}>Delete</button>}</td>
+      <td><div className="taskActions"><button type="button" className="secondary" onClick={() => setSelectedTask(task)}>Open</button>{context?.canEdit && <button className="icon dangerText" onClick={() => remove(task.id)}>Delete</button>}</div></td>
     </tr>)}</tbody></table></div></section>
+    {selectedTask && context && <TaskDetailPanel task={selectedTask} context={context} businesses={businesses} onClose={() => setSelectedTask(null)} onSaved={refreshSelected}/>}
   </AppShell>;
 }
 
