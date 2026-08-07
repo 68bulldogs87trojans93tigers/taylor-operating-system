@@ -1,4 +1,4 @@
-# Firefly OS v0.3.4 Deployment
+# Firefly OS v0.3.5 Deployment
 
 Complete these steps in order.
 
@@ -22,8 +22,8 @@ No new environment variables are required.
 
 ## 3. Verify
 
-1. Refresh Firefly OS and confirm the sidebar says **v0.3.4**.
-2. Open **Tasks** and confirm the **Notes & updates** column is visible.
-3. Click **Notes & updates**, add a test note, and confirm the author and time.
+1. Refresh Firefly OS and confirm the sidebar says **v0.3.5**.
+2. Open **Tasks & Notes** and confirm the blue **Notes & Updates** banner is visible.
+3. Click **Open Notes & Updates** beneath any task, add a test note, and confirm the author and time.
 4. Change a task field and confirm it appears in the activity timeline.
 5. Confirm Read Only users can view but cannot post or edit.
