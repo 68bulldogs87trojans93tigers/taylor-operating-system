@@ -10,15 +10,20 @@ function fail(error, status = 400) {
   return Response.json({ error }, { status });
 }
 
-function normalizeAccess(body) {
+function normalizeAccess(body, validBusinesses) {
   const allBusinesses = body.allBusinesses !== false;
-  const businesses = allBusinesses ? [] : [...new Set((body.businesses || []).filter(item => BUSINESSES.includes(item)))];
+  const businesses = allBusinesses ? [] : [...new Set((body.businesses || []).filter(item => validBusinesses.includes(item)))];
   if (!allBusinesses && !businesses.length) throw new Error('Choose at least one business.');
   return { allBusinesses, businesses };
 }
 
-async function replaceBusinessAccess(admin, workspaceId, userId, role, body) {
-  const { allBusinesses, businesses } = normalizeAccess(body);
+async function getValidBusinesses(admin, workspaceId) {
+  const { data, error } = await admin.from('businesses').select('name').eq('workspace_id', workspaceId).eq('is_active', true);
+  return error || !data?.length ? BUSINESSES : data.map(business => business.name);
+}
+
+async function replaceBusinessAccess(admin, workspaceId, userId, role, body, validBusinesses) {
+  const { allBusinesses, businesses } = normalizeAccess(body, validBusinesses);
   const { error: deleteError } = await admin.from('workspace_member_business_access').delete().eq('workspace_id', workspaceId).eq('user_id', userId);
   if (deleteError) throw deleteError;
   if (role !== 'admin' && !allBusinesses) {
@@ -72,10 +77,10 @@ export async function POST(request) {
   const fullName = typeof body.fullName === 'string' ? body.fullName.trim().slice(0, 120) : '';
   const role = allowedRoles.has(body.role) ? body.role : '';
   if (!email || !email.includes('@') || !role) return fail('Enter a valid email and permission level.');
-  try { normalizeAccess(body); } catch (error) { return fail(error.message); }
-
   const { adminClient: admin, membership } = access;
   const workspaceId = membership.workspace_id;
+  const validBusinesses = await getValidBusinesses(admin, workspaceId);
+  try { normalizeAccess(body, validBusinesses); } catch (error) { return fail(error.message); }
   const origin = new URL(request.url).origin;
   let user;
   let invitationSent = true;
@@ -99,7 +104,7 @@ export async function POST(request) {
   if (profileError) return fail(profileError.message, 500);
   const { error: memberError } = await admin.from('workspace_members').upsert({ workspace_id: workspaceId, user_id: user.id, role }, { onConflict: 'workspace_id,user_id' });
   if (memberError) return fail(memberError.message, 500);
-  try { await replaceBusinessAccess(admin, workspaceId, user.id, role, body); } catch (error) { return fail(error.message, 500); }
+  try { await replaceBusinessAccess(admin, workspaceId, user.id, role, body, validBusinesses); } catch (error) { return fail(error.message, 500); }
 
   const { error: invitationError } = await admin.from('workspace_invitations').upsert({
     workspace_id: workspaceId,
@@ -125,14 +130,14 @@ export async function PATCH(request) {
   const role = allowedRoles.has(body.role) ? body.role : '';
   if (!userId || !role) return fail('Choose a valid member and permission level.');
   if (userId === access.user.id && role !== 'admin') return fail('You cannot remove your own Developer permission.');
-  try { normalizeAccess(body); } catch (error) { return fail(error.message); }
-
   const { adminClient: admin, membership } = access;
   const workspaceId = membership.workspace_id;
+  const validBusinesses = await getValidBusinesses(admin, workspaceId);
+  try { normalizeAccess(body, validBusinesses); } catch (error) { return fail(error.message); }
   const { data: updated, error: updateError } = await admin.from('workspace_members').update({ role }).eq('workspace_id', workspaceId).eq('user_id', userId).select('user_id').maybeSingle();
   if (updateError) return fail(updateError.message, 500);
   if (!updated) return fail('Member not found.', 404);
-  try { await replaceBusinessAccess(admin, workspaceId, userId, role, body); } catch (error) { return fail(error.message, 500); }
+  try { await replaceBusinessAccess(admin, workspaceId, userId, role, body, validBusinesses); } catch (error) { return fail(error.message, 500); }
   return Response.json({ message: 'Permissions updated.' });
 }
 

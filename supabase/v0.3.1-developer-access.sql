@@ -1,11 +1,19 @@
 -- Firefly OS v0.3.1 — Developer invitations and role-based access
 -- Run this entire file once in the Supabase SQL Editor before deploying v0.3.1.
 
+-- Compatibility repair for projects whose shared updated_at trigger expects
+-- this column on every managed table.
+alter table if exists public.profiles
+  add column if not exists updated_at timestamptz not null default now();
+alter table if exists public.workspace_members
+  add column if not exists updated_at timestamptz not null default now();
+
 create table if not exists public.workspace_member_business_access (
   workspace_id uuid not null references public.workspaces(id) on delete cascade,
   user_id uuid not null references auth.users(id) on delete cascade,
   business text not null,
   created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
   primary key (workspace_id, user_id, business)
 );
 
@@ -19,6 +27,7 @@ create table if not exists public.workspace_invitations (
   invited_user_id uuid references auth.users(id) on delete set null,
   status text not null default 'pending' check (status in ('pending', 'accepted', 'revoked')),
   created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
   accepted_at timestamptz,
   unique (workspace_id, email)
 );
@@ -170,6 +179,8 @@ drop policy if exists "v031_members_delete_developers" on public.workspace_membe
 create policy "v031_members_delete_developers"
 on public.workspace_members as restrictive for delete to authenticated
 using (public.firefly_is_developer(workspace_id));
+
+notify pgrst, 'reload schema';
 
 -- Verification output: at least one row should show role = admin.
 select p.email, wm.role, w.name as workspace_name

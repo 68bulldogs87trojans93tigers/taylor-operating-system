@@ -4,6 +4,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { getSupabase } from '../lib/supabase';
 import { getWorkspaceContext } from '../lib/workspace';
+import { getBusinesses } from '../lib/businesses';
 
 const mainLinks = [
   ['/dashboard','Dashboard'],
@@ -14,16 +15,6 @@ const mainLinks = [
   ['/meetings','Meetings']
 ];
 
-const businessLinks = [
-  ['Firefly Mortgage','Firefly Mortgage'],
-  ['Medical','Medical'],
-  ['NP Franchise','NP Franchise'],
-  ['Construction','Construction'],
-  ['Lake House','Lake House'],
-  ['Boba Tea','Boba Tea'],
-  ['Cross-Business / AI','Cross-Business / AI']
-];
-
 export default function AppShell({ children, title, subtitle }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -31,6 +22,7 @@ export default function AppShell({ children, title, subtitle }) {
   const [email, setEmail] = useState('');
   const [businessesOpen, setBusinessesOpen] = useState(true);
   const [access, setAccess] = useState({ isDeveloper: false, businesses: null });
+  const [businessLinks, setBusinessLinks] = useState([]);
 
   useEffect(() => {
     const supabase = getSupabase();
@@ -38,7 +30,9 @@ export default function AppShell({ children, title, subtitle }) {
       if (!data.session) router.replace('/login');
       else {
         setEmail(data.session.user.email || '');
-        setAccess(await getWorkspaceContext(supabase));
+        const workspace = await getWorkspaceContext(supabase);
+        setAccess(workspace);
+        setBusinessLinks(await getBusinesses(supabase, workspace.workspaceId));
         setReady(true);
       }
     });
@@ -68,7 +62,7 @@ export default function AppShell({ children, title, subtitle }) {
                 <button type="button" className="navToggle" aria-label="Toggle businesses" onClick={()=>setBusinessesOpen(!businessesOpen)}>{businessesOpen?'▾':'▸'}</button>
               </div>
               {businessesOpen && <div className="subnav">
-                {businessLinks.filter(([area]) => !access.businesses || access.businesses.includes(area)).map(([area,name]) => <Link key={area} href={`/businesses?area=${encodeURIComponent(area)}`}>{name}</Link>)}
+                {businessLinks.filter(business => !access.businesses || access.businesses.includes(business.name)).map(business => <Link key={business.id || business.name} href={`/businesses?area=${encodeURIComponent(business.name)}`}>{business.name}</Link>)}
               </div>}
             </div>;
           }

@@ -1,61 +1,37 @@
-# Firefly OS v0.3.1 Deployment
+# Firefly OS v0.3.2 Deployment
 
 Complete these steps in order.
 
 ## 1. Run the Supabase migration
 
-1. Open `supabase/v0.3.1-developer-access.sql` from this release.
-2. Copy the **entire SQL contents** into the Supabase SQL Editor. Do not paste
-   only the filename.
-3. Click **Run** once.
-4. Review the result table and confirm Billy's login email shows role `admin`.
+1. Open `supabase/v0.3.2-company-manager.sql` from this release.
+2. In Supabase, open **SQL Editor** and clear any previous text.
+3. Copy and paste the **entire SQL contents**. Do not paste only the filename.
+4. Click **Run** once.
+5. Confirm the result lists the current Firefly companies.
 
-If Billy is not already an admin, replace the example email below with Billy's
-actual Firefly OS login email and run it separately:
+This migration creates the company directory, seeds the existing companies,
+adds access policies, and installs safe company renaming. It does not delete
+tasks, loans, meetings, profiles, workspaces, memberships, or invitations.
 
-```sql
-update public.workspace_members
-set role = 'admin'
-where user_id = (
-  select id from public.profiles
-  where lower(email) = lower('BILLY_LOGIN_EMAIL_HERE')
-  limit 1
-);
-```
+If upgrading from v0.3.1, run only the v0.3.2 migration. New installations must
+run the earlier migrations in version order before v0.3.2.
 
-The migration adds access-control tables and policies. It does not delete or
-rewrite existing tasks, loans, meetings, profiles, or workspaces.
-
-## 2. Configure Supabase invitation redirects
-
-In **Supabase → Authentication → URL Configuration**, add this redirect URL:
-
-`https://YOUR-FIREFLY-DOMAIN/welcome`
-
-Replace the example domain with the current Vercel production domain.
-
-## 3. Configure Vercel
-
-In **Vercel → Project → Settings → Environment Variables**, add:
-
-- `SUPABASE_SERVICE_ROLE_KEY`: copy the service-role key from the existing
-  Supabase project's API settings.
-
-Apply it to Production and any Preview environments that should send invites.
-Never put this key in GitHub or any `NEXT_PUBLIC_` variable.
-
-Keep the existing Supabase and OpenAI variables unchanged.
-
-## 4. Deploy the code
+## 2. Deploy the code
 
 Upload the contents of this release folder to the root of the existing GitHub
 repository and commit the changes. Vercel will build and deploy automatically.
 
-## 5. Verify
+No new Vercel environment variables are required. Keep the existing Supabase,
+service-role, and OpenAI variables unchanged.
 
-1. Sign in as Billy and confirm **Developer** appears in the sidebar.
-2. Open Developer and invite a test email with **Read Only** permission.
-3. Accept the emailed invitation and create the test password.
-4. Confirm the test user can navigate but cannot edit.
-5. Change the test user to **Editor** and verify editing becomes available.
-6. Revoke the test user and confirm access is removed.
+## 3. Verify
+
+1. Sign in with a Developer account and open **Developer**.
+2. Add a temporary company with a name and description.
+3. Confirm it appears in the sidebar, Business Workspaces, New Task form, and
+   company-access options for team members.
+4. Create a task for it and confirm the task appears in that company's workspace.
+5. Edit the company description, then archive and restore the company.
+6. Delete the temporary task if desired. Companies are archived rather than
+   deleted so historical task data remains intact.

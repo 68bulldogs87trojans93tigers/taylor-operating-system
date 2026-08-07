@@ -6,7 +6,7 @@ import AppShell from '../../components/AppShell';
 import StatusBadge from '../../components/StatusBadge';
 import DataError from '../../components/DataError';
 import { getSupabase } from '../../lib/supabase';
-import { BUSINESSES } from '../../lib/businesses';
+import { getBusinesses } from '../../lib/businesses';
 import { getWorkspaceContext } from '../../lib/workspace';
 
 const blank = { title: '', business: 'Firefly Mortgage', owner: 'Billy', due_date: '', priority: 'High', status: 'Not Started', why: '' };
@@ -32,6 +32,7 @@ function TasksContent() {
   const [context, setContext] = useState(null);
   const [error, setError] = useState('');
   const [sort, setSort] = useState({ key: 'due_date', direction: 'asc' });
+  const [businesses, setBusinesses] = useState([]);
 
   useEffect(() => { load(); }, []);
 
@@ -39,7 +40,16 @@ function TasksContent() {
     const supabase = getSupabase();
     const workspace = await getWorkspaceContext(supabase);
     setContext(workspace);
-    const { data, error: loadError } = await supabase.from('tasks').select('*').eq('workspace_id', workspace.workspaceId).order('due_date', { ascending: true, nullsFirst: false });
+    const [taskResult, businessData] = await Promise.all([
+      supabase.from('tasks').select('*').eq('workspace_id', workspace.workspaceId).order('due_date', { ascending: true, nullsFirst: false }),
+      getBusinesses(supabase, workspace.workspaceId)
+    ]);
+    const { data, error: loadError } = taskResult;
+    const allowedBusinesses = businessData.filter(business => !workspace.businesses || workspace.businesses.includes(business.name));
+    setBusinesses(allowedBusinesses);
+    setForm(current => allowedBusinesses.some(business => business.name === current.business)
+      ? current
+      : { ...current, business: allowedBusinesses[0]?.name || '' });
     if (loadError) setError(loadError.message); else setTasks(data || []);
   }
 
@@ -54,7 +64,7 @@ function TasksContent() {
       updated_by: workspace.userId
     });
     if (addError) setError(addError.message);
-    else { setForm(blank); setShow(false); load(); }
+    else { setForm({ ...blank, business: businesses[0]?.name || '' }); setShow(false); load(); }
   }
 
   async function update(id, patch) {
@@ -101,7 +111,7 @@ function TasksContent() {
     <div className="toolbar"><div className="filters"><input placeholder="Search tasks…" value={search} onChange={event => setSearch(event.target.value)}/><select value={filter} onChange={event => setFilter(event.target.value)}>{areas.map(area => <option key={area}>{area}</option>)}</select></div>{context?.canEdit ? <button onClick={() => setShow(!show)}>+ New task</button> : <span className="readOnlyPill">Read-only access</span>}</div>
     {show && context?.canEdit && <form className="panel formGrid" onSubmit={add}>
       <label>Task<input required value={form.title} onChange={event => setForm({ ...form, title: event.target.value })}/></label>
-      <label>Business<select value={form.business} onChange={event => setForm({ ...form, business: event.target.value })}>{BUSINESSES.map(business => <option key={business}>{business}</option>)}</select></label>
+      <label>Business<select value={form.business} onChange={event => setForm({ ...form, business: event.target.value })}>{businesses.map(business => <option key={business.id || business.name}>{business.name}</option>)}</select></label>
       <label>Owner<input required value={form.owner} onChange={event => setForm({ ...form, owner: event.target.value })}/></label>
       <label>Due date<input type="date" value={form.due_date} onChange={event => setForm({ ...form, due_date: event.target.value })}/></label>
       <label>Priority<select value={form.priority} onChange={event => setForm({ ...form, priority: event.target.value })}><option>Critical</option><option>High</option><option>Medium</option><option>Low</option></select></label>

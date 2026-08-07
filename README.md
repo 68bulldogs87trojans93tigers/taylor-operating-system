@@ -1,28 +1,21 @@
-# Firefly OS v0.3.1 — Developer Access
+# Firefly OS v0.3.2 — Company Manager
 
-This release adds secure team invitations and role-based permissions to the
-verified v0.3.0 AI COO release.
-
-## Permission levels
-
-- **Read Only** (`viewer`): can navigate and read assigned business areas but
-  cannot create, edit, or delete operational records.
-- **Editor** (`member`): can navigate and edit operational records in assigned
-  business areas.
-- **Developer** (`admin`): full access plus invitations, permission changes,
-  business assignments, and access revocation.
+This release lets Developers create and manage companies without changing the
+code or running additional SQL for each company.
 
 ## Included
 
-- Developer-only sidebar link and protected `/developer` route.
-- Secure Supabase email invitations and `/welcome` account setup.
-- All-business or selected-business access controls.
-- Team member permission editing and access revocation.
-- Database-enforced read-only, editor, developer, and business-scope policies.
-- Invite-only account creation in the Firefly OS interface.
-- Existing sortable tasks and read-only AI COO functionality.
+- Developer-only **Add company** form.
+- Company name and description editing.
+- Archive and restore controls for user-created companies.
+- Automatic company lists in the sidebar, Business Workspaces, New Task form,
+  and team invitation permissions.
+- Safe company renaming that updates existing task and member-access records.
+- Workspace and company-level access enforced by Supabase Row Level Security.
+- Preserved v0.3.1 Read Only, Editor, and Developer roles.
+- Preserved sortable tasks, AI COO, meeting capture, and mortgage pipeline.
 
 ## Required deployment work
 
-This release requires one controlled Supabase migration and the server-only
-`SUPABASE_SERVICE_ROLE_KEY` Vercel variable. Follow `DEPLOYMENT.md` exactly.
+Run `supabase/v0.3.2-company-manager.sql` once, then deploy the application code.
+No new Vercel environment variables are required. See `DEPLOYMENT.md`.

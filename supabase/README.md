@@ -1,10 +1,11 @@
-# Supabase — v0.3.1
+# Supabase — Firefly OS v0.3.2
 
-Run `v0.3.1-developer-access.sql` once before deploying the application.
+For an existing v0.3.1 deployment, run `v0.3.2-company-manager.sql` once before
+deploying the application.
 
-The migration adds invitation tracking, optional business-level access, and
-restrictive security policies. It does not delete or rewrite existing tasks,
-loans, meetings, profiles, workspaces, or membership records.
+The migration adds the workspace company directory, seeds the current company
+names, applies access policies, and installs safe company renaming. It does not
+delete existing operational or authentication data.
 
-The final query lists the current membership roles. Confirm that Billy's row
-shows `admin`; that is the database role displayed as **Developer** in Firefly OS.
+The final query should list the active Firefly companies. New installations
+must run the SQL migrations in version order.

@@ -7,18 +7,8 @@ import AppShell from '../../components/AppShell';
 import StatusBadge from '../../components/StatusBadge';
 import DataError from '../../components/DataError';
 import { getSupabase } from '../../lib/supabase';
-import { BUSINESSES } from '../../lib/businesses';
+import { getBusinesses } from '../../lib/businesses';
 import { getWorkspaceContext } from '../../lib/workspace';
-
-const descriptions = {
-  'Lake House': 'Protect revenue, manage repairs and prepare manager transition.',
-  'Firefly Mortgage': 'Close loans, prove operations and scale production.',
-  Medical: 'Consolidate facilities and evaluate Hazel Green clinic.',
-  'NP Franchise': 'Launch, measure demand and build franchise support.',
-  'Boba Tea': 'Improve P&L, traffic and operating accountability.',
-  Construction: 'Launch pipeline, first homes and subdivision analysis.',
-  'Cross-Business / AI': 'Websites, dashboards, meeting intelligence and automation.'
-};
 
 const stages = ['Lead','Application','File Review','Structuring','Processing','Underwriting','Conditions','Clear to Close','Funded','On Hold'];
 
@@ -29,6 +19,7 @@ function BusinessesContent() {
   const [loans, setLoans] = useState([]);
   const [context, setContext] = useState(null);
   const [error, setError] = useState('');
+  const [businesses, setBusinesses] = useState([]);
 
   useEffect(() => { load(); }, []);
 
@@ -37,10 +28,12 @@ function BusinessesContent() {
     const workspace = await getWorkspaceContext(supabase);
     const { workspaceId } = workspace;
     setContext(workspace);
-    const [taskResult, loanResult] = await Promise.all([
+    const [taskResult, loanResult, businessData] = await Promise.all([
       supabase.from('tasks').select('*').eq('workspace_id', workspaceId).order('due_date', { ascending: true, nullsFirst: false }),
-      supabase.from('loans').select('*').eq('workspace_id', workspaceId).order('amount', { ascending: false })
+      supabase.from('loans').select('*').eq('workspace_id', workspaceId).order('amount', { ascending: false }),
+      getBusinesses(supabase, workspaceId)
     ]);
+    setBusinesses(businessData.filter(business => !workspace.businesses || workspace.businesses.includes(business.name)));
     if (taskResult.error || loanResult.error) setError(taskResult.error?.message || loanResult.error?.message);
     else { setTasks(taskResult.data || []); setLoans(loanResult.data || []); }
   }
@@ -50,13 +43,15 @@ function BusinessesContent() {
     if (updateError) setError(updateError.message); else load();
   }
 
-  const grouped = useMemo(() => BUSINESSES.filter(business => !context?.businesses || context.businesses.includes(business)).map(business => ({ business, items: tasks.filter(task => task.business === business) })), [tasks, context]);
+  const grouped = useMemo(() => businesses.map(business => ({ ...business, items: tasks.filter(task => task.business === business.name) })), [tasks, businesses]);
   const selectedTasks = selected ? tasks.filter(task => task.business === selected) : [];
   const total = loans.reduce((sum, loan) => sum + Number(loan.amount || 0), 0);
 
   if (selected && context?.businesses && !context.businesses.includes(selected)) return <AppShell title={selected} subtitle="Restricted business workspace"><section className="panel blockedPanel"><h2>Business access required</h2><p>Your invitation does not include this business.</p><Link href="/businesses" className="buttonLink">Return to businesses</Link></section></AppShell>;
 
-  if (selected) return <AppShell title={selected} subtitle={descriptions[selected] || 'Business workspace'}>
+  const selectedBusiness = businesses.find(business => business.name === selected);
+
+  if (selected) return <AppShell title={selected} subtitle={selectedBusiness?.description || 'Business workspace'}>
     <DataError message={error}/>
     <div className="workspaceTop"><Link href="/businesses" className="backLink">← All businesses</Link><Link href={`/tasks?business=${encodeURIComponent(selected)}`} className="buttonLink">View tasks</Link></div>
     {selected === 'Firefly Mortgage' && <>
@@ -72,7 +67,7 @@ function BusinessesContent() {
   </AppShell>;
 
   return <AppShell title="Business Workspaces" subtitle="Select a business to see its tasks, pipeline and current priorities">
-    <DataError message={error}/><section className="businessGrid">{grouped.map(group => <Link href={`/businesses?area=${encodeURIComponent(group.business)}`} className="businessCard businessLink" key={group.business}><div className="panelHead"><h2>{group.business}</h2><span className="count">{group.items.filter(task => task.status !== 'Complete').length} open</span></div><p>{descriptions[group.business]}</p><div className="taskList compact">{group.items.slice(0, 5).map(task => <div className="taskRow" key={task.id}><div><strong>{task.title}</strong><small>{task.owner} · {task.due_date || 'TBD'}</small></div><StatusBadge status={task.status}/></div>)}{!group.items.length && <small>No tasks yet.</small>}</div><span className="openWorkspace">Open workspace →</span></Link>)}</section>
+    <DataError message={error}/><section className="businessGrid">{grouped.map(group => <Link href={`/businesses?area=${encodeURIComponent(group.name)}`} className="businessCard businessLink" key={group.id || group.name}><div className="panelHead"><h2>{group.name}</h2><span className="count">{group.items.filter(task => task.status !== 'Complete').length} open</span></div><p>{group.description || 'Business workspace and shared accountability.'}</p><div className="taskList compact">{group.items.slice(0, 5).map(task => <div className="taskRow" key={task.id}><div><strong>{task.title}</strong><small>{task.owner} · {task.due_date || 'TBD'}</small></div><StatusBadge status={task.status}/></div>)}{!group.items.length && <small>No tasks yet.</small>}</div><span className="openWorkspace">Open workspace →</span></Link>)}</section>
   </AppShell>;
 }
 
