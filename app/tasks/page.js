@@ -135,8 +135,12 @@ function TasksContent() {
       : { key, direction: 'asc' });
   }
 
-  return <AppShell title="Master Task Board" subtitle="One shared source of truth for assignments and deadlines">
+  return <AppShell title="Master Task Board" subtitle="Tasks, team notes, updates, assignments, and deadlines">
     <DataError message={error}/>
+    <section className="notesIntro" aria-label="Notes and updates">
+      <div><small>TEAM COLLABORATION</small><h2>Notes &amp; Updates</h2><p>Open any task below to read updates, add a note, or review its complete change history.</p></div>
+      <strong>{Object.keys(latestActivity).length} tasks with updates</strong>
+    </section>
     <div className="toolbar"><div className="filters"><input placeholder="Search tasks…" value={search} onChange={event => setSearch(event.target.value)}/><select value={filter} onChange={event => setFilter(event.target.value)}>{areas.map(area => <option key={area}>{area}</option>)}</select></div>{context?.canEdit ? <button onClick={() => setShow(!show)}>+ New task</button> : <span className="readOnlyPill">Read-only access</span>}</div>
     {show && context?.canEdit && <form className="panel formGrid" onSubmit={add}>
       <label>Task<input required value={form.title} onChange={event => setForm({ ...form, title: event.target.value })}/></label>
@@ -147,10 +151,9 @@ function TasksContent() {
       <label>Why<input value={form.why} onChange={event => setForm({ ...form, why: event.target.value })}/></label>
       <div className="wide actions"><button>Save task</button><button type="button" className="secondary" onClick={() => setShow(false)}>Cancel</button></div>
     </form>}
-    <section className="panel"><div className="tableWrap"><table><thead><tr>{sortableColumns.map(([key, label]) => <th key={key} aria-sort={sort.key === key ? (sort.direction === 'asc' ? 'ascending' : 'descending') : 'none'}><button type="button" className="sortButton" onClick={() => changeSort(key)}>{label}<span aria-hidden="true">{sort.key === key ? (sort.direction === 'asc' ? '▲' : '▼') : '↕'}</span></button></th>)}<th>Notes &amp; updates</th><th></th></tr></thead><tbody>{visible.map(task => <tr key={task.id}>
-      <td><strong>{task.title}</strong>{task.why && <small>{task.why}</small>}</td><td>{task.business}</td><td>{task.owner}</td><td>{task.due_date || 'TBD'}</td><td><StatusBadge status={task.priority}/></td>
+    <section className="panel"><div className="tableWrap"><table><thead><tr>{sortableColumns.map(([key, label]) => <th key={key} aria-sort={sort.key === key ? (sort.direction === 'asc' ? 'ascending' : 'descending') : 'none'}><button type="button" className="sortButton" onClick={() => changeSort(key)}>{label}<span aria-hidden="true">{sort.key === key ? (sort.direction === 'asc' ? '▲' : '▼') : '↕'}</span></button></th>)}<th></th></tr></thead><tbody>{visible.map(task => <tr key={task.id}>
+      <td className="taskPrimary"><strong>{task.title}</strong>{task.why && <small>{task.why}</small>}<small className="latestActivity">{latestActivity[task.id] ? `Latest: ${latestActivity[task.id].message}` : 'No notes yet'}</small><button type="button" className="notesButton" onClick={() => setSelectedTask(task)}>Open Notes &amp; Updates</button></td><td>{task.business}</td><td>{task.owner}</td><td>{task.due_date || 'TBD'}</td><td><StatusBadge status={task.priority}/></td>
       <td>{context?.canEdit ? <select value={task.status} onChange={event => update(task.id, { status: event.target.value })}><option>Not Started</option><option>In Progress</option><option>Blocked</option><option>Complete</option></select> : <StatusBadge status={task.status}/>}</td>
-      <td className="activityCell"><small>{latestActivity[task.id] ? `Latest: ${latestActivity[task.id].message}` : 'No notes yet'}</small><button type="button" className="notesButton" onClick={() => setSelectedTask(task)}>Notes &amp; updates</button></td>
       <td>{context?.canEdit && <button className="icon dangerText" onClick={() => remove(task.id)}>Delete</button>}</td>
     </tr>)}</tbody></table></div></section>
     {selectedTask && context && <TaskDetailPanel task={selectedTask} context={context} businesses={businesses} onClose={() => setSelectedTask(null)} onSaved={refreshSelected}/>}

@@ -1,12 +1,13 @@
-# Firefly OS v0.3.4 — Visible Task Notes Repair
+# Firefly OS v0.3.5 — Unmissable Notes & Updates
 
-This release makes task notes and updates unmistakably visible on the Master
-Task Board and adds an on-screen version marker to confirm the deployed build.
+This release keeps Notes & Updates in the first task column, where it remains
+visible without horizontal scrolling, and adds a dedicated page banner.
 
 ## Included
 
-- Dedicated **Notes & updates** column on every task.
-- Visible **Notes & updates** button instead of the ambiguous Open button.
+- **Tasks & Notes** in the main navigation.
+- Dedicated **Notes & Updates** banner above the task board.
+- **Open Notes & Updates** button directly beneath every task name.
 - Latest activity summary displayed in the task row.
 - Task detail panel with team notes, author, and timestamp.
 - Full task editing from the detail panel.
@@ -15,7 +16,7 @@ Task Board and adds an on-screen version marker to confirm the deployed build.
 - Read Only users can view activity; Editors and Developers can add notes and
   update tasks.
 - Company-scoped access remains enforced.
-- Sidebar displays **v0.3.4** so the production version is immediately verifiable.
+- Sidebar displays **v0.3.5** so the production version is immediately verifiable.
 - Recent task activity remains available to AI COO.
 
 ## Required deployment work

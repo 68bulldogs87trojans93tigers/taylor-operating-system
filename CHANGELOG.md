@@ -1,5 +1,13 @@
 # Changelog
 
+## v0.3.5 — Unmissable Notes & Updates
+
+- Renamed the sidebar destination to **Tasks & Notes**.
+- Added a prominent Notes & Updates section above the task board.
+- Moved the Notes & Updates button directly beneath every task name so it no
+  longer depends on horizontal scrolling.
+- Kept the latest note or update visible beside its task.
+
 ## v0.3.4 — Visible Task Notes Repair
 
 - Made Notes & Updates a dedicated, labeled task-board column.

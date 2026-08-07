@@ -9,7 +9,7 @@ import { getBusinesses } from '../lib/businesses';
 const mainLinks = [
   ['/dashboard','Dashboard'],
   ['/coo','AI COO'],
-  ['/tasks','Tasks'],
+  ['/tasks','Tasks & Notes'],
   ['/businesses','Businesses'],
   ['/team','Team'],
   ['/meetings','Meetings']
@@ -51,7 +51,7 @@ export default function AppShell({ children, title, subtitle }) {
   if (!access.role) return <div className="center"><div className="card blockedPanel"><h2>Workspace access required</h2><p>Your Firefly OS access has not been assigned or has been revoked.</p><button onClick={signOut}>Return to sign in</button></div></div>;
   return <div className="appShell">
     <aside className="sidebar">
-      <div className="brand"><span className="logo">F</span><div><strong>Firefly OS</strong><small>Operating System · v0.3.4</small></div></div>
+      <div className="brand"><span className="logo">F</span><div><strong>Firefly OS</strong><small>Operating System · v0.3.5</small></div></div>
       <nav>
         {mainLinks.map(([href,label]) => {
           const active = pathname === href;
